@@ -42,6 +42,11 @@ export default function StartupDetail({ startup, onBack, onPropose }) {
                   <span>✓</span> Tax Rebate {startup.taxRebate}
                 </Badge>
                 <Badge variant="equity">Gov. Equity {startup.govEquity}</Badge>
+                {startup.founded && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                    Founded {startup.founded}
+                  </span>
+                )}
               </div>
               <h1 className="text-3xl font-bold text-slate-900">{startup.name}</h1>
               <p className="text-slate-500 mt-2 text-base max-w-xl">{startup.longDescription}</p>
@@ -70,9 +75,58 @@ export default function StartupDetail({ startup, onBack, onPropose }) {
           </div>
         </div>
 
+        {/* Traction KPIs */}
+        {startup.traction && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
+            <h3 className="text-base font-semibold text-slate-900 mb-4">Traction &amp; KPIs</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: 'Team Size', value: `${startup.traction.teamSize} people`, icon: '👥' },
+                { label: 'Revenue', value: startup.traction.revenueLabel, icon: '📈' },
+                { label: 'Customers', value: startup.traction.customersLabel, icon: '🏢' },
+                { label: 'Key Partnerships', value: startup.traction.partnershipsLabel, icon: '🤝' },
+              ].map((kpi) => {
+                const isPreRevenue = kpi.label === 'Revenue' && kpi.value === 'Pre-revenue';
+                return (
+                  <div key={kpi.label} className={`rounded-xl p-4 flex flex-col gap-1 ${isPreRevenue ? 'bg-amber-50' : 'bg-slate-50'}`}>
+                    <span className="text-lg">{kpi.icon}</span>
+                    <p className="text-xs text-slate-500 mt-1">{kpi.label}</p>
+                    {isPreRevenue ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full w-fit mt-0.5">
+                        Pre-revenue
+                      </span>
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-800">{kpi.value}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column */}
           <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* Achievements */}
+            {startup.achievements && startup.achievements.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h3 className="text-base font-semibold text-slate-900 mb-4">Key Achievements</h3>
+                <ul className="flex flex-col gap-3">
+                  {startup.achievements.map((achievement, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg className="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-slate-700 leading-relaxed">{achievement}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Milestone progress */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <h3 className="text-base font-semibold text-slate-900 mb-5">Milestone Progress</h3>
@@ -87,6 +141,30 @@ export default function StartupDetail({ startup, onBack, onPropose }) {
                 ))}
               </div>
             </div>
+
+            {/* Recent Updates */}
+            {startup.recentUpdates && startup.recentUpdates.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h3 className="text-base font-semibold text-slate-900 mb-5">Recent Updates</h3>
+                <div className="flex flex-col gap-0">
+                  {startup.recentUpdates.map((update, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />
+                        {i < startup.recentUpdates.length - 1 && (
+                          <div className="w-px flex-1 bg-slate-200 my-1" />
+                        )}
+                      </div>
+                      <div className="pb-5">
+                        <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{update.date}</span>
+                        <p className="text-sm font-semibold text-slate-800 mt-2">{update.title}</p>
+                        <p className="text-sm text-slate-500 mt-1 leading-relaxed">{update.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Stage flow */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
