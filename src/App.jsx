@@ -19,6 +19,7 @@ export default function App() {
   function handleSelectStartup(startup) {
     setSelectedStartup(startup);
     setPage('detail');
+    window.scrollTo(0, 0);
   }
 
   function handleBackToMarketplace() {
@@ -34,6 +35,7 @@ export default function App() {
     setPage(newPage);
     if (newPage !== 'detail') setSelectedStartup(null);
     setShowProposal(false);
+    window.scrollTo(0, 0);
   }
 
   return (

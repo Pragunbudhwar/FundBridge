@@ -1,5 +1,15 @@
 import Badge from './Badge';
 
+const sectorAccent = {
+  ClimateTech:  { bar: 'bg-emerald-500', avatar: 'bg-emerald-50 text-emerald-700', ring: 'ring-emerald-100' },
+  HealthTech:   { bar: 'bg-blue-500',    avatar: 'bg-blue-50 text-blue-700',       ring: 'ring-blue-100' },
+  DeepTech:     { bar: 'bg-violet-500',  avatar: 'bg-violet-50 text-violet-700',   ring: 'ring-violet-100' },
+  AgriTech:     { bar: 'bg-amber-500',   avatar: 'bg-amber-50 text-amber-700',     ring: 'ring-amber-100' },
+  Cybersecurity:{ bar: 'bg-slate-700',   avatar: 'bg-slate-100 text-slate-700',    ring: 'ring-slate-200' },
+};
+
+const defaultAccent = { bar: 'bg-blue-500', avatar: 'bg-blue-50 text-blue-700', ring: 'ring-blue-100' };
+
 function getRiskVariant(risk) {
   if (risk === 'High') return 'risk_high';
   if (risk === 'Medium-High') return 'risk_medium_high';
@@ -9,59 +19,80 @@ function getRiskVariant(risk) {
 function RiskBar({ score }) {
   const color = score >= 75 ? 'bg-red-400' : score >= 60 ? 'bg-amber-400' : 'bg-emerald-400';
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2.5">
       <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${score}%` }} />
       </div>
-      <span className="text-xs text-slate-500 font-medium">{score}/100</span>
+      <span className="text-xs text-slate-500 font-semibold tabular-nums">{score}/100</span>
     </div>
   );
 }
 
 export default function StartupCard({ startup, onSelect }) {
+  const accent = sectorAccent[startup.sector] ?? defaultAccent;
+  const initials = startup.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200 p-6 flex flex-col gap-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-900">{startup.name}</h3>
-          <p className="text-sm text-slate-500 mt-0.5">{startup.description}</p>
+    <div
+      className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 flex flex-col overflow-hidden cursor-pointer"
+      onClick={() => onSelect(startup)}
+    >
+      {/* Top accent bar */}
+      <div className={`h-1 w-full ${accent.bar}`} />
+
+      <div className="p-6 flex flex-col gap-5 flex-1">
+        {/* Header */}
+        <div className="flex items-start gap-3">
+          <div className={`w-10 h-10 rounded-xl ${accent.avatar} ring-2 ${accent.ring} flex items-center justify-center text-sm font-bold flex-shrink-0`}>
+            {initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-semibold text-slate-900 leading-snug">{startup.name}</h3>
+            <p className="text-xs text-slate-400 mt-0.5 leading-relaxed line-clamp-2">{startup.description}</p>
+          </div>
+        </div>
+
+        {/* Badges */}
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant="sector">{startup.sector}</Badge>
+          <Badge variant="stage">{startup.stage}</Badge>
+          <Badge variant={getRiskVariant(startup.risk)}>{startup.risk} Risk</Badge>
+          <Badge variant="tax">
+            <span className="text-emerald-600">✓</span> Tax Rebate
+          </Badge>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-100">
+            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Funding Needed</p>
+            <p className="text-lg font-bold text-slate-900 mt-0.5">{startup.fundingNeeded}</p>
+          </div>
+          <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-100">
+            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Valuation</p>
+            <p className="text-lg font-bold text-slate-900 mt-0.5">{startup.valuation}</p>
+          </div>
+        </div>
+
+        {/* Risk score */}
+        <div className="mt-auto">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs text-slate-400 font-medium">Risk Score</span>
+            <Badge variant="equity">Gov. equity {startup.govEquity}</Badge>
+          </div>
+          <RiskBar score={startup.riskScore} />
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Badge variant="sector">{startup.sector}</Badge>
-        <Badge variant="stage">{startup.stage}</Badge>
-        <Badge variant={getRiskVariant(startup.risk)}>{startup.risk} Risk</Badge>
-        <Badge variant="tax">
-          <span className="text-emerald-600">✓</span> Tax Rebate {startup.taxRebate}
-        </Badge>
+      {/* Footer button */}
+      <div className="px-6 pb-6">
+        <button
+          onClick={(e) => { e.stopPropagation(); onSelect(startup); }}
+          className="w-full py-2.5 rounded-xl bg-slate-900 group-hover:bg-blue-600 text-white text-sm font-medium transition-colors duration-200"
+        >
+          View Startup →
+        </button>
       </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-slate-50 rounded-xl p-3">
-          <p className="text-xs text-slate-500">Funding Needed</p>
-          <p className="text-base font-bold text-slate-900">{startup.fundingNeeded}</p>
-        </div>
-        <div className="bg-slate-50 rounded-xl p-3">
-          <p className="text-xs text-slate-500">Stage 4 Valuation</p>
-          <p className="text-base font-bold text-slate-900">{startup.valuation}</p>
-        </div>
-      </div>
-
-      <div>
-        <div className="flex justify-between mb-1">
-          <span className="text-xs text-slate-500">Risk Score</span>
-          <Badge variant="equity">Gov. equity {startup.govEquity}</Badge>
-        </div>
-        <RiskBar score={startup.riskScore} />
-      </div>
-
-      <button
-        onClick={() => onSelect(startup)}
-        className="mt-auto w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors duration-150"
-      >
-        View Startup
-      </button>
     </div>
   );
 }

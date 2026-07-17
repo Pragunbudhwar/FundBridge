@@ -64,7 +64,7 @@ export default function Landing({ setPage }) {
         {/* Stats row */}
         <div className="mt-16 grid grid-cols-3 gap-6 max-w-2xl mx-auto">
           {[
-            { value: '5', label: 'Validated Startups' },
+            { value: '10', label: 'Validated Startups' },
             { value: '30%', label: 'Tax Rebate Protection' },
             { value: '€1–8M', label: 'Stage 4 Valuations' },
           ].map((s) => (
