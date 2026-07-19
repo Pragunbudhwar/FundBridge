@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  ChevronDown, FileText, Check, Loader2, X, AlertTriangle, Download,
+  ArrowRight, TrendingUp, ShieldCheck, ClipboardList, Circle,
+} from 'lucide-react';
 import StatCard from '../components/StatCard';
 import Badge from '../components/Badge';
 import ProgressBar from '../components/ProgressBar';
+import Reveal from '../components/Reveal';
 import { portfolioStartups } from '../data/mockData';
 
 // ─── Eligibility engine ───────────────────────────────────────────────────────
@@ -103,10 +109,10 @@ function getRiskVariant(risk) {
 
 function Chevron({ open }) {
   return (
-    <svg className={`w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-180' : ''}`}
-      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
+    <ChevronDown
+      className={`w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-180' : ''}`}
+      strokeWidth={2}
+    />
   );
 }
 
@@ -164,13 +170,23 @@ function rebateStatusExplanation(startup, rebate, isSubmitted) {
 
 function GeneratingModal({ startup, currentStep }) {
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+    <motion.div
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full"
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+      >
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-            </svg>
+            <FileText className="w-5 h-5 text-blue-600" strokeWidth={2} />
           </div>
           <div>
             <p className="font-semibold text-slate-900">Generating Claim Form</p>
@@ -181,9 +197,11 @@ function GeneratingModal({ startup, currentStep }) {
           {GENERATION_STEPS.map((step, i) => (
             <div key={i} className="flex items-center gap-3">
               {i < currentStep ? (
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
+                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                  <Check className="w-3 h-3" strokeWidth={3} />
+                </span>
               ) : i === currentStep ? (
-                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <Loader2 className="w-5 h-5 text-blue-500 animate-spin flex-shrink-0" strokeWidth={2.4} />
               ) : (
                 <span className="w-5 h-5 rounded-full border-2 border-slate-200 flex-shrink-0" />
               )}
@@ -193,8 +211,8 @@ function GeneratingModal({ startup, currentStep }) {
             </div>
           ))}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -204,8 +222,20 @@ function ClaimFormModal({ startup, rebate, onSubmit, onClose }) {
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <motion.div
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 8 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 flex-shrink-0">
           <div>
@@ -213,9 +243,7 @@ function ClaimFormModal({ startup, rebate, onSubmit, onClose }) {
             <h2 className="text-lg font-bold text-slate-900">Form FB-TAX-01 — Tax Rebate Claim</h2>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-5 h-5" strokeWidth={2} />
           </button>
         </div>
 
@@ -327,23 +355,43 @@ function ClaimFormModal({ startup, rebate, onSubmit, onClose }) {
           <button
             onClick={() => declared && onSubmit(claimRef)}
             disabled={!declared}
-            className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${declared
+            className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 flex items-center gap-2 ${declared
               ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md'
               : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
           >
-            Submit Claim to FundBridge →
+            Submit Claim to FundBridge
+            <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
 function SuccessModal({ claimRef, startup, rebate, onClose }) {
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
-        <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-2xl mx-auto mb-4">✓</div>
+    <motion.div
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center"
+        initial={{ opacity: 0, scale: 0.9, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+      >
+        <motion.div
+          className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mx-auto mb-4"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 16, delay: 0.1 }}
+        >
+          <Check className="w-7 h-7" strokeWidth={2.5} />
+        </motion.div>
         <h2 className="text-xl font-bold text-slate-900 mb-2">Claim Successfully Filed</h2>
         <p className="text-sm text-slate-500 leading-relaxed mb-5">
           Your §17 EStG tax rebate claim for <strong>{startup.name}</strong> has been submitted to FundBridge and is now under review. Our tax team will contact you at the registered investor address within <strong>6–8 weeks</strong>.
@@ -367,8 +415,8 @@ function SuccessModal({ claimRef, startup, rebate, onClose }) {
           className="w-full py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors duration-150">
           Back to Dashboard
         </button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -382,13 +430,19 @@ function ReviewTimeline({ submittedAt }) {
   return (
     <div className="relative flex items-start justify-between pt-1">
       <div className="absolute top-3 left-4 right-4 h-0.5 bg-slate-200 z-0" />
-      {steps.map((step) => (
-        <div key={step.label} className="flex flex-col items-center gap-1.5 z-10 flex-1">
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border-2
+      {steps.map((step, i) => (
+        <motion.div
+          key={step.label}
+          className="flex flex-col items-center gap-1.5 z-10 flex-1"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: i * 0.12 }}
+        >
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2
             ${step.state === 'done' ? 'bg-emerald-500 border-emerald-500 text-white'
             : step.state === 'active' ? 'bg-blue-500 border-blue-500 text-white'
             : 'bg-white border-slate-200 text-slate-400'}`}>
-            {step.state === 'done' ? '✓' : step.state === 'active' ? (
+            {step.state === 'done' ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : step.state === 'active' ? (
               <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
             ) : ''}
           </div>
@@ -397,7 +451,7 @@ function ReviewTimeline({ submittedAt }) {
           </p>
           {step.date && <p className="text-[10px] text-slate-400 text-center">{step.date}</p>}
           {step.state === 'active' && <p className="text-[10px] text-blue-500 text-center font-medium">In progress</p>}
-        </div>
+        </motion.div>
       ))}
     </div>
   );
@@ -410,7 +464,7 @@ function InvestmentRegistration({ startup }) {
     <div className="flex flex-col gap-6 pt-2">
       {startup.isInsolvent && (
         <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-3.5">
-          <span className="text-red-500 text-sm flex-shrink-0 mt-0.5">⚠</span>
+          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" strokeWidth={2.2} />
           <p className="text-sm text-red-700 leading-relaxed">
             <strong>{startup.name}</strong> entered official insolvency on <strong>{formatDate(startup.insolvencyDate)}</strong>.
             FundBridge Reference: <span className="font-mono">{startup.insolvencyRef}</span>.
@@ -463,9 +517,7 @@ function InvestmentRegistration({ startup }) {
                   <td className="px-4 py-3 font-mono text-xs text-slate-500">{p.reference}</td>
                   <td className="px-4 py-3">
                     <span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
+                      <Download className="w-3 h-3" strokeWidth={2} />
                       {p.proof}
                     </span>
                   </td>
@@ -557,13 +609,19 @@ function TaxRebateSection({ startup, rebate, isSubmitted, claimInfo, onStartClai
         </div>
         <div className="flex items-center gap-3">
           <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${rebate.eligible ? 'bg-emerald-500' : 'bg-amber-400'}`}
-              style={{ width: `${Math.min((rebate.monthsHeld / HOLDING_REQUIRED_MONTHS) * 100, 100)}%` }}
+            <motion.div
+              className={`h-full rounded-full ${rebate.eligible ? 'bg-emerald-500' : 'bg-amber-400'}`}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min((rebate.monthsHeld / HOLDING_REQUIRED_MONTHS) * 100, 100)}%` }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             />
           </div>
           <span className="text-xs font-semibold text-slate-500 tabular-nums flex-shrink-0">{rebate.monthsHeld}/{HOLDING_REQUIRED_MONTHS} mo.</span>
-          {rebate.eligible && <span className="text-xs font-semibold text-emerald-600 flex-shrink-0">✓ Met</span>}
+          {rebate.eligible && (
+            <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-600 flex-shrink-0">
+              <Check className="w-3.5 h-3.5" strokeWidth={3} /> Met
+            </span>
+          )}
         </div>
       </div>
 
@@ -603,8 +661,10 @@ function TaxRebateSection({ startup, rebate, isSubmitted, claimInfo, onStartClai
         <div className="flex flex-col gap-3">
           {requirements.map((req) => (
             <div key={req.label} className="flex items-start gap-3">
-              <span className={`mt-0.5 flex-shrink-0 text-sm font-bold ${req.met ? 'text-emerald-500' : 'text-slate-300'}`}>
-                {req.met ? '✓' : '○'}
+              <span className="mt-0.5 flex-shrink-0">
+                {req.met
+                  ? <Check className="w-4 h-4 text-emerald-500" strokeWidth={3} />
+                  : <Circle className="w-4 h-4 text-slate-300" strokeWidth={2} />}
               </span>
               <div>
                 <p className={`text-sm font-medium ${req.met ? 'text-slate-800' : 'text-slate-500'}`}>{req.label}</p>
@@ -617,15 +677,16 @@ function TaxRebateSection({ startup, rebate, isSubmitted, claimInfo, onStartClai
 
       {/* File claim button */}
       {canFileClaim && (
-        <button
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
           onClick={onStartClaim}
-          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors duration-150 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors duration-150 shadow-[var(--shadow-glow-blue)] flex items-center justify-center gap-2"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+          <FileText className="w-4 h-4" strokeWidth={2.2} />
           File Tax Rebate Claim
-        </button>
+        </motion.button>
       )}
     </div>
   );
@@ -684,36 +745,38 @@ export default function InvestorDashboard({ proposal }) {
   const successRebate  = showSuccess ? rebates[portfolioStartups.findIndex(s => s.id === showSuccess.startupId)] : null;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-mesh-soft bg-slate-50">
 
       {/* ── Modals ── */}
-      {claimFlow?.state === 'generating' && claimStartup && (
-        <GeneratingModal startup={claimStartup} currentStep={claimFlow.step} />
-      )}
-      {claimFlow?.state === 'form' && claimStartup && claimRebate && (
-        <ClaimFormModal
-          startup={claimStartup}
-          rebate={claimRebate}
-          onSubmit={handleSubmitClaim}
-          onClose={() => setClaimFlow(null)}
-        />
-      )}
-      {showSuccess && successStartup && successRebate && (
-        <SuccessModal
-          claimRef={showSuccess.claimRef}
-          startup={successStartup}
-          rebate={successRebate}
-          onClose={closeSuccess}
-        />
-      )}
+      <AnimatePresence>
+        {claimFlow?.state === 'generating' && claimStartup && (
+          <GeneratingModal startup={claimStartup} currentStep={claimFlow.step} />
+        )}
+        {claimFlow?.state === 'form' && claimStartup && claimRebate && (
+          <ClaimFormModal
+            startup={claimStartup}
+            rebate={claimRebate}
+            onSubmit={handleSubmitClaim}
+            onClose={() => setClaimFlow(null)}
+          />
+        )}
+        {showSuccess && successStartup && successRebate && (
+          <SuccessModal
+            claimRef={showSuccess.claimRef}
+            startup={successStartup}
+            rebate={successRebate}
+            onClose={closeSuccess}
+          />
+        )}
+      </AnimatePresence>
 
       <div className="max-w-7xl mx-auto px-6 py-12">
 
         {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Investor Dashboard</h1>
-          <p className="text-slate-500 mt-2">Your portfolio, investment records, and tax rebate eligibility.</p>
-        </div>
+        <Reveal className="mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight font-display">Investor Dashboard</h1>
+          <p className="text-slate-500 mt-3 text-lg">Your portfolio, investment records, and tax rebate eligibility.</p>
+        </Reveal>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -785,11 +848,21 @@ export default function InvestorDashboard({ proposal }) {
                               </span>
                             }
                           />
-                          {openSections[regKey] && (
-                            <div className="mt-2 px-1">
-                              <InvestmentRegistration startup={s} />
-                            </div>
-                          )}
+                          <AnimatePresence initial={false}>
+                            {openSections[regKey] && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                                className="overflow-hidden"
+                              >
+                                <div className="mt-2 px-1">
+                                  <InvestmentRegistration startup={s} />
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
 
                         <div>
@@ -803,17 +876,27 @@ export default function InvestorDashboard({ proposal }) {
                               </span>
                             }
                           />
-                          {openSections[taxKey] && (
-                            <div className="mt-2 px-1">
-                              <TaxRebateSection
-                                startup={s}
-                                rebate={r}
-                                isSubmitted={isSubmitted}
-                                claimInfo={claimInfo}
-                                onStartClaim={() => startClaim(s.id)}
-                              />
-                            </div>
-                          )}
+                          <AnimatePresence initial={false}>
+                            {openSections[taxKey] && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                                className="overflow-hidden"
+                              >
+                                <div className="mt-2 px-1">
+                                  <TaxRebateSection
+                                    startup={s}
+                                    rebate={r}
+                                    isSubmitted={isSubmitted}
+                                    claimInfo={claimInfo}
+                                    onStartClaim={() => startClaim(s.id)}
+                                  />
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       </div>
                     </div>
@@ -827,11 +910,15 @@ export default function InvestorDashboard({ proposal }) {
               <h3 className="text-base font-semibold text-slate-900 mb-4">Success / Failure Simulation</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
-                  <p className="text-sm font-semibold text-emerald-800 mb-2">📈 If startup succeeds</p>
+                  <p className="text-sm font-semibold text-emerald-800 mb-2 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" strokeWidth={2.2} /> If startup succeeds
+                  </p>
                   <p className="text-sm text-emerald-700 leading-relaxed">Investor receives upside from growth or exit. Government benefits through its passive equity stake.</p>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
-                  <p className="text-sm font-semibold text-blue-800 mb-2">🛡 If startup fails</p>
+                  <p className="text-sm font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4" strokeWidth={2.2} /> If startup fails
+                  </p>
                   <p className="text-sm text-blue-700 leading-relaxed">Investors who held for ≥24 months and meet all §17 EStG conditions receive a 30% tax rebate. File via FundBridge.</p>
                 </div>
               </div>
@@ -862,7 +949,9 @@ export default function InvestorDashboard({ proposal }) {
               {proposal ? (
                 <div className="flex flex-col gap-3">
                   <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-                    <span className="text-emerald-600 text-sm font-semibold">✓ Proposal sent</span>
+                    <span className="text-emerald-600 text-sm font-semibold inline-flex items-center gap-1.5">
+                      <Check className="w-4 h-4" strokeWidth={2.5} /> Proposal sent
+                    </span>
                   </div>
                   <div className="flex flex-col gap-2">
                     {[
@@ -885,7 +974,9 @@ export default function InvestorDashboard({ proposal }) {
                 </div>
               ) : (
                 <div className="text-center py-6">
-                  <div className="text-3xl mb-3">📋</div>
+                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-3">
+                    <ClipboardList className="w-6 h-6" strokeWidth={2} />
+                  </div>
                   <p className="text-sm text-slate-500">No proposals created yet.</p>
                   <p className="text-xs text-slate-400 mt-1">Select a startup to create your first investment proposal.</p>
                 </div>

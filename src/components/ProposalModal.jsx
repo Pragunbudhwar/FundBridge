@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { motion } from 'motion/react';
+import { X, Check, ArrowRight } from 'lucide-react';
 
 const defaultMilestones = [
   {
@@ -54,18 +56,30 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4">
+    <motion.div
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <motion.div
+        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 8 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+      >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-100 rounded-t-3xl px-8 py-5 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Investment Proposal</h2>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight font-display">Investment Proposal</h2>
             <p className="text-sm text-slate-500">{startup.name}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors">
-            ✕
+            <X className="w-4 h-4" strokeWidth={2.2} />
           </button>
         </div>
 
@@ -191,9 +205,10 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors shadow-lg shadow-blue-200"
+                className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
               >
-                Review Proposal Summary →
+                Review Proposal Summary
+                <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
               </button>
             </form>
           )}
@@ -250,11 +265,16 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
 
           {step === 'success' && (
             <div className="text-center py-6 flex flex-col items-center gap-5">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-3xl">
-                ✓
-              </div>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.05 }}
+                className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600"
+              >
+                <Check className="w-8 h-8" strokeWidth={2.5} />
+              </motion.div>
               <div>
-                <h3 className="text-xl font-bold text-slate-900">Proposal Sent</h3>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight font-display">Proposal Sent</h3>
                 <p className="text-slate-500 text-sm mt-2 max-w-sm">
                   Proposal sent to {startup.name}. FundBridge will coordinate an introductory meeting between the investor and startup.
                 </p>
@@ -285,7 +305,7 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

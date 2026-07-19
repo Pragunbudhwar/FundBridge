@@ -1,3 +1,5 @@
+import { motion } from 'motion/react';
+import { ShieldCheck, ArrowRight } from 'lucide-react';
 import Badge from './Badge';
 
 const sectorAccent = {
@@ -21,7 +23,13 @@ function RiskBar({ score }) {
   return (
     <div className="flex items-center gap-2.5">
       <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${score}%` }} />
+        <motion.div
+          className={`h-full rounded-full ${color}`}
+          initial={{ width: 0 }}
+          whileInView={{ width: `${score}%` }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        />
       </div>
       <span className="text-xs text-slate-500 font-semibold tabular-nums">{score}/100</span>
     </div>
@@ -33,8 +41,10 @@ export default function StartupCard({ startup, onSelect }) {
   const initials = startup.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div
-      className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 flex flex-col overflow-hidden cursor-pointer"
+    <motion.div
+      whileHover={{ y: -6 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+      className="group bg-white rounded-2xl border border-slate-200 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-soft-lg)] hover:border-slate-300 transition-shadow duration-300 flex flex-col overflow-hidden cursor-pointer"
       onClick={() => onSelect(startup)}
     >
       {/* Top accent bar */}
@@ -57,9 +67,7 @@ export default function StartupCard({ startup, onSelect }) {
           <Badge variant="sector">{startup.sector}</Badge>
           <Badge variant="stage">{startup.stage}</Badge>
           <Badge variant={getRiskVariant(startup.risk)}>{startup.risk} Risk</Badge>
-          <Badge variant="tax">
-            <span className="text-emerald-600">✓</span> Tax Rebate
-          </Badge>
+          <Badge variant="tax" icon={ShieldCheck}>Tax Rebate</Badge>
         </div>
 
         {/* Stats */}
@@ -88,11 +96,12 @@ export default function StartupCard({ startup, onSelect }) {
       <div className="px-6 pb-6">
         <button
           onClick={(e) => { e.stopPropagation(); onSelect(startup); }}
-          className="w-full py-2.5 rounded-xl bg-slate-900 group-hover:bg-blue-600 text-white text-sm font-medium transition-colors duration-200"
+          className="w-full py-2.5 rounded-xl bg-slate-900 group-hover:bg-blue-600 text-white text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-1.5"
         >
-          View Startup →
+          View Startup
+          <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.2} />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }

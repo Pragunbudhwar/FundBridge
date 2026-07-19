@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  /* Layered soft shadow scale for premium depth */
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-soft-md: 0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-soft-lg: 0 4px 8px rgba(15, 23, 42, 0.05), 0 16px 48px rgba(15, 23, 42, 0.10);
+  --shadow-glow-blue: 0 8px 32px rgba(37, 99, 235, 0.18);
+}
+
 @layer base {
   body {
     margin: 0;
@@ -11,5 +19,72 @@
   #root {
     width: 100%;
     min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  /* Display heading treatment — tight, confident */
+  .font-display {
+    letter-spacing: -0.03em;
+    font-feature-settings: "ss01", "cv01", "cv03";
+  }
+
+  /* Soft multi-blob gradient mesh backdrop */
+  .bg-mesh {
+    background-color: #f8fafc;
+    background-image:
+      radial-gradient(42rem 42rem at 15% -10%, rgba(59, 130, 246, 0.14), transparent 60%),
+      radial-gradient(38rem 38rem at 90% 0%, rgba(99, 102, 241, 0.12), transparent 55%),
+      radial-gradient(34rem 34rem at 60% 30%, rgba(139, 92, 246, 0.08), transparent 60%);
+  }
+
+  .bg-mesh-soft {
+    background-image:
+      radial-gradient(36rem 36rem at 100% 0%, rgba(99, 102, 241, 0.08), transparent 55%),
+      radial-gradient(32rem 32rem at 0% 20%, rgba(59, 130, 246, 0.07), transparent 55%);
+  }
+
+  /* Animated conic sheen used behind the CTA card */
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-pan 8s ease infinite;
+  }
+
+  /* Slow floating drift for hero accent orbs */
+  .animate-float {
+    animation: float 7s ease-in-out infinite;
+  }
+  .animate-float-slow {
+    animation: float 11s ease-in-out infinite;
+  }
+
+  /* Shimmer sweep for premium accent bars */
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+}
+
+@keyframes gradient-pan {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50%      { transform: translateY(-18px) translateX(8px); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }

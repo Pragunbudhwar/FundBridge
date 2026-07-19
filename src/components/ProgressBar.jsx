@@ -1,3 +1,5 @@
+import { motion, useReducedMotion } from 'motion/react';
+
 export default function ProgressBar({ label, progress, color = 'blue' }) {
   const colors = {
     blue: 'bg-blue-500',
@@ -5,6 +7,7 @@ export default function ProgressBar({ label, progress, color = 'blue' }) {
     indigo: 'bg-indigo-500',
     amber: 'bg-amber-500',
   };
+  const reduce = useReducedMotion();
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -13,9 +16,12 @@ export default function ProgressBar({ label, progress, color = 'blue' }) {
         <span className="text-sm font-semibold text-slate-800">{progress}%</span>
       </div>
       <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${colors[color] || colors.blue}`}
-          style={{ width: `${progress}%` }}
+        <motion.div
+          className={`h-full rounded-full ${colors[color] || colors.blue}`}
+          initial={reduce ? false : { width: 0 }}
+          whileInView={{ width: `${progress}%` }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         />
       </div>
     </div>

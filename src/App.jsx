@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import './index.css';
 
 import Navbar from './components/Navbar';
@@ -38,39 +39,64 @@ export default function App() {
     window.scrollTo(0, 0);
   }
 
+  const reduce = useReducedMotion();
+  // Key transitions by page; detail is keyed by startup so switching startups re-animates.
+  const transitionKey = page === 'detail' ? `detail-${selectedStartup?.id}` : page;
+
+  const variants = reduce
+    ? { initial: {}, animate: {}, exit: {} }
+    : {
+        initial: { opacity: 0, y: 12 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -8 },
+      };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar currentPage={page} setPage={navigateTo} />
 
-      {page === 'home' && <Landing setPage={navigateTo} />}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={transitionKey}
+          variants={variants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {page === 'home' && <Landing setPage={navigateTo} />}
 
-      {page === 'marketplace' && (
-        <Marketplace onSelectStartup={handleSelectStartup} />
-      )}
+          {page === 'marketplace' && (
+            <Marketplace onSelectStartup={handleSelectStartup} />
+          )}
 
-      {page === 'detail' && selectedStartup && (
-        <StartupDetail
-          startup={selectedStartup}
-          onBack={handleBackToMarketplace}
-          onPropose={() => setShowProposal(true)}
-        />
-      )}
+          {page === 'detail' && selectedStartup && (
+            <StartupDetail
+              startup={selectedStartup}
+              onBack={handleBackToMarketplace}
+              onPropose={() => setShowProposal(true)}
+            />
+          )}
 
-      {page === 'investor' && (
-        <InvestorDashboard proposal={proposal} />
-      )}
+          {page === 'investor' && (
+            <InvestorDashboard proposal={proposal} />
+          )}
 
-      {page === 'government' && <GovernmentDashboard />}
+          {page === 'government' && <GovernmentDashboard />}
+        </motion.div>
+      </AnimatePresence>
 
-      {showProposal && selectedStartup && (
-        <ProposalModal
-          startup={selectedStartup}
-          onClose={() => setShowProposal(false)}
-          onSubmit={(data) => {
-            handleSubmitProposal(data);
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {showProposal && selectedStartup && (
+          <ProposalModal
+            startup={selectedStartup}
+            onClose={() => setShowProposal(false)}
+            onSubmit={(data) => {
+              handleSubmitProposal(data);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

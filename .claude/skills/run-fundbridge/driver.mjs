@@ -43,25 +43,29 @@ await page.waitForTimeout(600);
 await page.screenshot({ path: `${OUT}/04-startup-detail.png` });
 console.log('04-startup-detail.png');
 
-// 5. Proposal modal
-const propose = page.locator('button', { hasText: /propose|invest/i }).first();
+// 5. Proposal modal — target the page CTA specifically (nav has an "Investor" button
+// that also matches /invest/), and allow time for the modal spring animation.
+const propose = page.locator('button', { hasText: 'Create Investment Proposal' }).first();
 if (await propose.count() > 0) {
   await propose.click();
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(700);
   await page.screenshot({ path: `${OUT}/05-proposal-modal.png` });
   console.log('05-proposal-modal.png');
-  await page.keyboard.press('Escape');
+  // Modal closes on backdrop click (no Escape handler) — click the top-left corner,
+  // clear of the centered panel, then let the exit animation finish.
+  await page.mouse.click(10, 10);
+  await page.waitForTimeout(400);
 }
 
-// 6. Investor Dashboard
-await page.click('text=Investor Dashboard');
-await page.waitForTimeout(600);
+// 6. Investor Dashboard — waits account for the AnimatePresence page transition (~0.8s).
+await page.click('nav >> text=Investor Dashboard');
+await page.waitForTimeout(1000);
 await page.screenshot({ path: `${OUT}/06-investor-dashboard.png` });
 console.log('06-investor-dashboard.png');
 
 // 7. Government Dashboard
-await page.click('text=Government Dashboard');
-await page.waitForTimeout(600);
+await page.click('nav >> text=Government Dashboard');
+await page.waitForTimeout(1000);
 await page.screenshot({ path: `${OUT}/07-government-dashboard.png` });
 console.log('07-government-dashboard.png');
 
