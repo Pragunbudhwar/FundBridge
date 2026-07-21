@@ -23,10 +23,10 @@ export default function Navbar({ currentPage, setPage }) {
 
   return (
     <nav
-      className={`sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b transition-all duration-300 ${
+      className={`fixed top-0 inset-x-0 z-50 backdrop-blur-md border-b transition-all duration-300 ${
         scrolled
-          ? 'border-slate-200 shadow-[0_4px_24px_rgba(15,23,42,0.06)]'
-          : 'border-transparent shadow-none'
+          ? 'bg-white/80 border-slate-200 shadow-[0_4px_24px_rgba(15,23,42,0.06)]'
+          : 'bg-white/70 border-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -41,7 +41,7 @@ export default function Navbar({ currentPage, setPage }) {
           >
             <Waypoints className="w-4 h-4 text-white" strokeWidth={2.4} />
           </motion.div>
-          <span className="text-slate-900 font-semibold text-lg tracking-tight font-display">
+          <span className="font-semibold text-lg tracking-tight font-display text-slate-900">
             Fund<span className="text-blue-600">Bridge</span>
           </span>
         </button>
@@ -54,9 +54,7 @@ export default function Navbar({ currentPage, setPage }) {
                 key={link.page}
                 onClick={() => setPage(link.page)}
                 className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
-                  active
-                    ? 'text-blue-700'
-                    : 'text-slate-600 hover:text-slate-900'
+                  active ? 'text-blue-700' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {active && (

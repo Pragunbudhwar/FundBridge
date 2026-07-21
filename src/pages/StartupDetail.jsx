@@ -7,12 +7,6 @@ import Badge from '../components/Badge';
 import ProgressBar from '../components/ProgressBar';
 import Reveal from '../components/Reveal';
 
-function getRiskVariant(risk) {
-  if (risk === 'High') return 'risk_high';
-  if (risk === 'Medium-High') return 'risk_medium_high';
-  return 'risk_medium';
-}
-
 const flowSteps = [
   { label: 'Stage 1–4', sub: 'Government Support', color: 'bg-blue-600' },
   { label: 'Stage 4', sub: 'FundBridge Validation', color: 'bg-indigo-600' },
@@ -29,11 +23,11 @@ export default function StartupDetail({ startup, onBack, onPropose }) {
 
   return (
     <div className="min-h-screen bg-mesh-soft bg-slate-50">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 pt-24 pb-12">
         {/* Back */}
         <button
           onClick={onBack}
-          className="group flex items-center gap-2 text-slate-500 hover:text-slate-800 text-sm font-medium mb-8 transition-colors"
+          className="group flex items-center gap-2 text-slate-500 hover:text-slate-800 text-sm font-medium mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" strokeWidth={2.2} />
           Back to Marketplace
@@ -47,7 +41,6 @@ export default function StartupDetail({ startup, onBack, onPropose }) {
                 <div className="flex flex-wrap gap-2 mb-3">
                   <Badge variant="sector">{startup.sector}</Badge>
                   <Badge variant="stage">{startup.stage}</Badge>
-                  <Badge variant={getRiskVariant(startup.risk)}>{startup.risk} Risk</Badge>
                   <Badge variant="tax" icon={ShieldCheck}>Tax Rebate {startup.taxRebate}</Badge>
                   <Badge variant="equity">Gov. Equity {startup.govEquity}</Badge>
                   {startup.founded && (
@@ -75,7 +68,7 @@ export default function StartupDetail({ startup, onBack, onPropose }) {
               {[
                 { label: 'Stage 4 Valuation', value: startup.valuation },
                 { label: 'Funding to Stage 6', value: startup.fundingNeeded },
-                { label: 'Risk Score', value: `${startup.riskScore}/100` },
+                { label: 'Founded', value: startup.founded ? String(startup.founded) : '—' },
                 { label: 'Gov. Passive Equity', value: startup.govEquity },
               ].map((m) => (
                 <div key={m.label} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
@@ -232,7 +225,7 @@ export default function StartupDetail({ startup, onBack, onPropose }) {
           </div>
 
           {/* Right column */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
             {/* Government support history */}
             <Reveal>
               <div className="bg-white rounded-2xl border border-slate-200 shadow-[var(--shadow-soft)] p-6">
@@ -250,28 +243,24 @@ export default function StartupDetail({ startup, onBack, onPropose }) {
               </div>
             </Reveal>
 
-            {/* Risk overview */}
+            {/* Investment snapshot */}
             <Reveal>
               <div className="bg-white rounded-2xl border border-slate-200 shadow-[var(--shadow-soft)] p-6">
-                <h3 className="text-base font-semibold text-slate-900 mb-4">Risk Overview</h3>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-slate-500">Risk level</span>
-                  <Badge variant={getRiskVariant(startup.risk)}>{startup.risk}</Badge>
+                <h3 className="text-base font-semibold text-slate-900 mb-4">Investment Snapshot</h3>
+                <div className="flex flex-col gap-3">
+                  {[
+                    { label: 'Stage 4 valuation', value: startup.valuation },
+                    { label: 'Funding to stage 6', value: startup.fundingNeeded },
+                    { label: 'Gov. passive equity', value: startup.govEquity },
+                    { label: 'Tax rebate on failure', value: startup.taxRebate },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-center justify-between">
+                      <span className="text-sm text-slate-500">{row.label}</span>
+                      <span className="text-sm font-semibold text-slate-800">{row.value}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-slate-500">Risk score</span>
-                  <span className="text-sm font-semibold text-slate-800">{startup.riskScore}/100</span>
-                </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <motion.div
-                    className={`h-full rounded-full ${startup.riskScore >= 75 ? 'bg-red-400' : startup.riskScore >= 60 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${startup.riskScore}%` }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                </div>
-                <p className="text-xs text-slate-400 mt-3">Lower is better. Score reflects stage completion, market traction, and regulatory exposure.</p>
+                <p className="text-xs text-slate-400 mt-4 leading-relaxed">All positions carry a 30% tax rebate on failure under the §17 EStG pilot, subject to a ≥24-month holding period.</p>
               </div>
             </Reveal>
 

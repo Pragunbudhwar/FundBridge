@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import './index.css';
 
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import ProposalModal from './components/ProposalModal';
 
 import Landing from './pages/Landing';
@@ -85,6 +86,8 @@ export default function App() {
           {page === 'government' && <GovernmentDashboard />}
         </motion.div>
       </AnimatePresence>
+
+      <Footer setPage={navigateTo} />
 
       <AnimatePresence>
         {showProposal && selectedStartup && (

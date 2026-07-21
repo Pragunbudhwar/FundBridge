@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronDown, FileText, Check, Loader2, X, AlertTriangle, Download,
   ArrowRight, TrendingUp, ShieldCheck, ClipboardList, Circle,
+  Wallet, Building2, Activity,
 } from 'lucide-react';
 import StatCard from '../components/StatCard';
-import Badge from '../components/Badge';
 import ProgressBar from '../components/ProgressBar';
 import Reveal from '../components/Reveal';
 import { portfolioStartups } from '../data/mockData';
@@ -100,12 +100,6 @@ function getClaimRequirements(startup, rebate, isSubmitted) {
 }
 
 // ─── Shared UI helpers ────────────────────────────────────────────────────────
-
-function getRiskVariant(risk) {
-  if (risk === 'High') return 'risk_high';
-  if (risk === 'Medium-High') return 'risk_medium_high';
-  return 'risk_medium';
-}
 
 function Chevron({ open }) {
   return (
@@ -770,28 +764,35 @@ export default function InvestorDashboard({ proposal }) {
         )}
       </AnimatePresence>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 pt-24 pb-12">
 
         {/* Header */}
         <Reveal className="mb-10">
+          <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-full px-4 py-1.5 text-sm text-blue-700 font-medium mb-4">
+            <Wallet className="w-4 h-4" strokeWidth={2.2} />
+            Your FundBridge portfolio
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight font-display">Investor Dashboard</h1>
           <p className="text-slate-500 mt-3 text-lg">Your portfolio, investment records, and tax rebate eligibility.</p>
         </Reveal>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Invested" value={fmt(totalInvested)} accent="blue" />
-          <StatCard label="Startups Funded" value={portfolioStartups.length.toString()} sub="via FundBridge" accent="indigo" />
+          <StatCard label="Total Invested" value={fmt(totalInvested)} accent="blue" icon={Wallet} />
+          <StatCard label="Startups Funded" value={portfolioStartups.length.toString()} sub="via FundBridge" accent="indigo" icon={Building2} />
           <StatCard
-            label="Avg. Risk Score"
-            value={`${Math.round(portfolioStartups.reduce((s, p) => s + p.riskScore, 0) / portfolioStartups.length)}/100`}
+            label="Milestones Released"
+            value={`${portfolioStartups.reduce((s, p) => s + p.milestones.filter(m => m.status === 'Released').length, 0)}`}
+            sub="across your portfolio"
             accent="amber"
+            icon={Activity}
           />
           <StatCard
             label="Tax Rebate Eligible"
             value={fmt(eligibleTotal)}
             sub={lockedTotal > 0 ? `${fmt(lockedTotal)} locked · 30% rate` : 'Fully eligible · 30% rate'}
             accent="emerald"
+            icon={ShieldCheck}
           />
         </div>
 
@@ -829,7 +830,6 @@ export default function InvestorDashboard({ proposal }) {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-base font-bold text-slate-900">{s.invested}</span>
-                            <Badge variant={getRiskVariant(s.riskStatus)}>{s.riskStatus} Risk</Badge>
                           </div>
                         </div>
                         <ProgressBar label="Milestone Progress" progress={s.milestoneProgress} color={s.isInsolvent ? 'amber' : 'indigo'} />

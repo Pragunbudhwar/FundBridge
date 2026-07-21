@@ -52,25 +52,41 @@ export default function Marketplace({ onSelectStartup }) {
   }
 
   return (
-    <div className="min-h-screen bg-mesh-soft bg-slate-50">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Header */}
-        <Reveal className="mb-10">
-          <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-full px-4 py-1.5 text-sm text-blue-700 font-medium mb-4">
-            <BadgeCheck className="w-4 h-4" strokeWidth={2.2} />
-            Stage 4 · Government validated
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight font-display">Startup Marketplace</h1>
-          <p className="text-slate-500 mt-3 text-lg max-w-xl">
-            All startups below completed government-supported stages 1–4 and are seeking private investment to reach stage 6.
-          </p>
-        </Reveal>
+    <div className="min-h-screen bg-slate-50">
+      {/* Hero band */}
+      <div className="relative overflow-hidden bg-mesh border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-6 pt-32 pb-14 text-center">
+          <Reveal>
+            <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur border border-blue-200 rounded-full px-4 py-1.5 text-sm text-blue-700 font-medium mb-5 shadow-sm">
+              <BadgeCheck className="w-4 h-4" strokeWidth={2.2} />
+              Stage 4 · Government validated
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 tracking-tight font-display">Startup Marketplace</h1>
+            <p className="text-slate-500 mt-4 text-lg max-w-2xl mx-auto leading-relaxed">
+              Every startup here completed government-supported stages 1–4 and is now seeking private investment to reach stage 6.
+            </p>
+            <div className="mt-8 flex items-center justify-center gap-8">
+              {[
+                { value: startups.length, label: 'Live startups' },
+                { value: '30%', label: 'Rebate protection' },
+                { value: '1–10%', label: 'Gov. equity' },
+              ].map((s) => (
+                <div key={s.label} className="text-center">
+                  <p className="text-2xl font-bold text-slate-900 font-display">{s.value}</p>
+                  <p className="text-xs text-slate-400 uppercase tracking-wide mt-0.5">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </div>
 
-        {/* Search bar */}
-        <div className="mb-8" ref={containerRef}>
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        {/* Search bar — command-style, overlapping the hero band */}
+        <div className="mb-10 -mt-[4.5rem] relative z-10 max-w-3xl mx-auto" ref={containerRef}>
           <div className="relative">
             {/* Input wrapper */}
-            <div className={`flex items-center gap-3 bg-white border rounded-2xl px-4 py-3 shadow-sm transition-all duration-200 ${dropdownOpen ? 'border-blue-400 ring-4 ring-blue-100' : 'border-slate-200 hover:border-slate-300'}`}>
+            <div className={`flex items-center gap-3 bg-white border rounded-2xl px-5 py-4 shadow-[var(--shadow-soft-lg)] transition-all duration-200 ${dropdownOpen ? 'border-blue-400 ring-4 ring-blue-100' : 'border-slate-200 hover:border-slate-300'}`}>
               <Search className="w-4 h-4 text-slate-400 flex-shrink-0" strokeWidth={2} />
 
               {/* Active sector chip */}
@@ -202,9 +218,9 @@ export default function Marketplace({ onSelectStartup }) {
 
         {/* Cards grid */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {filtered.map((startup, i) => (
-              <Reveal key={startup.id} delay={Math.min(i * 0.06, 0.4)}>
+              <Reveal key={startup.id} delay={Math.min(i * 0.06, 0.4)} className="h-full">
                 <StartupCard startup={startup} onSelect={onSelectStartup} />
               </Reveal>
             ))}

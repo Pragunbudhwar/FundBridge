@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ShieldCheck, ArrowRight } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Landmark } from 'lucide-react';
 import Badge from './Badge';
 
 const sectorAccent = {
@@ -12,30 +12,6 @@ const sectorAccent = {
 
 const defaultAccent = { bar: 'bg-blue-500', avatar: 'bg-blue-50 text-blue-700', ring: 'ring-blue-100' };
 
-function getRiskVariant(risk) {
-  if (risk === 'High') return 'risk_high';
-  if (risk === 'Medium-High') return 'risk_medium_high';
-  return 'risk_medium';
-}
-
-function RiskBar({ score }) {
-  const color = score >= 75 ? 'bg-red-400' : score >= 60 ? 'bg-amber-400' : 'bg-emerald-400';
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-        <motion.div
-          className={`h-full rounded-full ${color}`}
-          initial={{ width: 0 }}
-          whileInView={{ width: `${score}%` }}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        />
-      </div>
-      <span className="text-xs text-slate-500 font-semibold tabular-nums">{score}/100</span>
-    </div>
-  );
-}
-
 export default function StartupCard({ startup, onSelect }) {
   const accent = sectorAccent[startup.sector] ?? defaultAccent;
   const initials = startup.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -44,7 +20,7 @@ export default function StartupCard({ startup, onSelect }) {
     <motion.div
       whileHover={{ y: -6 }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-      className="group bg-white rounded-2xl border border-slate-200 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-soft-lg)] hover:border-slate-300 transition-shadow duration-300 flex flex-col overflow-hidden cursor-pointer"
+      className="group h-full bg-white rounded-2xl border border-slate-200 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-soft-lg)] hover:border-slate-300 transition-shadow duration-300 flex flex-col overflow-hidden cursor-pointer"
       onClick={() => onSelect(startup)}
     >
       {/* Top accent bar */}
@@ -58,7 +34,7 @@ export default function StartupCard({ startup, onSelect }) {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-base font-semibold text-slate-900 leading-snug">{startup.name}</h3>
-            <p className="text-xs text-slate-400 mt-0.5 leading-relaxed line-clamp-2">{startup.description}</p>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed line-clamp-2 min-h-[2rem]">{startup.description}</p>
           </div>
         </div>
 
@@ -66,7 +42,6 @@ export default function StartupCard({ startup, onSelect }) {
         <div className="flex flex-wrap gap-1.5">
           <Badge variant="sector">{startup.sector}</Badge>
           <Badge variant="stage">{startup.stage}</Badge>
-          <Badge variant={getRiskVariant(startup.risk)}>{startup.risk} Risk</Badge>
           <Badge variant="tax" icon={ShieldCheck}>Tax Rebate</Badge>
         </div>
 
@@ -82,13 +57,13 @@ export default function StartupCard({ startup, onSelect }) {
           </div>
         </div>
 
-        {/* Risk score */}
-        <div className="mt-auto">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-slate-400 font-medium">Risk Score</span>
-            <Badge variant="equity">Gov. equity {startup.govEquity}</Badge>
-          </div>
-          <RiskBar score={startup.riskScore} />
+        {/* Government equity */}
+        <div className="mt-auto flex items-center justify-between pt-1">
+          <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+            <Landmark className="w-3.5 h-3.5 text-indigo-500" strokeWidth={2.2} />
+            Gov. passive equity
+          </span>
+          <span className="text-sm font-bold text-slate-900">{startup.govEquity}</span>
         </div>
       </div>
 

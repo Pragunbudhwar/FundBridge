@@ -5,12 +5,6 @@ import Badge from '../components/Badge';
 import Reveal from '../components/Reveal';
 import { startups } from '../data/mockData';
 
-function getRiskVariant(risk) {
-  if (risk === 'High') return 'risk_high';
-  if (risk === 'Medium-High') return 'risk_medium_high';
-  return 'risk_medium';
-}
-
 const transferredStartups = startups.map((s) => ({
   ...s,
   investorInterest: s.riskScore < 65 ? 'Active' : s.riskScore < 75 ? 'Reviewing' : 'Pending',
@@ -29,7 +23,7 @@ export default function GovernmentDashboard() {
 
   return (
     <div className="min-h-screen bg-mesh-soft bg-slate-50">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 pt-24 pb-12">
         {/* Header */}
         <Reveal className="mb-10">
           <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-full px-4 py-1.5 text-sm text-indigo-700 font-medium mb-4">
@@ -62,7 +56,7 @@ export default function GovernmentDashboard() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-100">
-                        {['Startup', 'Gov. Equity', 'Funding Needed', 'Investor Interest', 'Risk'].map((h) => (
+                        {['Startup', 'Gov. Equity', 'Funding Needed', 'Investor Interest'].map((h) => (
                           <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
                             {h}
                           </th>
@@ -101,9 +95,6 @@ export default function GovernmentDashboard() {
                             >
                               {s.investorInterest}
                             </Badge>
-                          </td>
-                          <td className="px-4 py-3">
-                            <Badge variant={getRiskVariant(s.risk)}>{s.risk}</Badge>
                           </td>
                         </motion.tr>
                       ))}
