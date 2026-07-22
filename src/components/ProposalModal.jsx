@@ -1,43 +1,61 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { X, Check, ArrowRight } from 'lucide-react';
+import { X, Check, ArrowRight, Plus, Trash2, CheckCircle2, AlertCircle, Scale } from 'lucide-react';
 
 const defaultMilestones = [
-  {
-    name: 'Product validation',
-    condition: 'Complete pilot with 3 enterprise customers',
-    amount: '€200,000',
-    date: '2025-03-31',
-  },
-  {
-    name: 'Revenue traction',
-    condition: 'Reach €50,000 monthly recurring revenue',
-    amount: '€300,000',
-    date: '2025-09-30',
-  },
-  {
-    name: 'Stage 6 readiness',
-    condition: 'Complete growth audit and investor reporting package',
-    amount: '€500,000',
-    date: '2026-03-31',
-  },
+  { name: 'Product validation', condition: 'Complete pilot with 3 enterprise customers', amount: 200000, date: '2025-03-31' },
+  { name: 'Revenue traction', condition: 'Reach €50,000 monthly recurring revenue', amount: 300000, date: '2025-09-30' },
+  { name: 'Stage 6 readiness', condition: 'Complete growth audit and investor reporting package', amount: 500000, date: '2026-03-31' },
 ];
+
+// Stacked allocation-bar segment colors (complete class strings — Tailwind-safe)
+const barColors = ['bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-sky-500'];
+
+function parseAmount(v) {
+  const n = parseInt(String(v).replace(/[^\d]/g, ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+function fmtEuro(n) {
+  return '€' + (n || 0).toLocaleString('en-US');
+}
 
 export default function ProposalModal({ startup, onClose, onSubmit }) {
   const [step, setStep] = useState('form'); // 'form' | 'summary' | 'success'
-  const [investmentAmount, setInvestmentAmount] = useState('');
+  const [investmentAmount, setInvestmentAmount] = useState('€1,000,000');
   const [fundingType, setFundingType] = useState('milestone');
   const [milestones, setMilestones] = useState(defaultMilestones);
   const [conditions, setConditions] = useState(
     'Monthly reporting, quarterly review meetings, and use-of-funds transparency required.'
   );
 
+  // ── Milestone allocation engine ──
+  const targetAmount = parseAmount(investmentAmount);
+  const allocated = milestones.reduce((s, m) => s + (Number(m.amount) || 0), 0);
+  const remaining = targetAmount - allocated;
+  const fullyAllocated = targetAmount > 0 && remaining === 0;
+  const canSubmit = targetAmount > 0 && (fundingType === 'full' || fullyAllocated);
+
   function updateMilestone(i, field, value) {
     setMilestones((prev) => prev.map((m, idx) => (idx === i ? { ...m, [field]: value } : m)));
+  }
+  function addMilestone() {
+    setMilestones((prev) => [...prev, { name: `Milestone ${prev.length + 1}`, condition: '', amount: 0, date: '' }]);
+  }
+  function removeMilestone(i) {
+    setMilestones((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev));
+  }
+  function distributeEvenly() {
+    if (targetAmount <= 0) return;
+    const n = milestones.length;
+    const base = Math.round(targetAmount / n / 1000) * 1000;
+    setMilestones((prev) =>
+      prev.map((m, idx) => ({ ...m, amount: idx === n - 1 ? targetAmount - base * (n - 1) : base }))
+    );
   }
 
   function handleFormSubmit(e) {
     e.preventDefault();
+    if (!canSubmit) return;
     setStep('summary');
   }
 
@@ -45,7 +63,7 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
     onSubmit({
       startup: startup.name,
       startupId: startup.id,
-      amount: investmentAmount,
+      amount: fmtEuro(targetAmount),
       fundingType,
       milestones: fundingType === 'milestone' ? milestones : null,
       conditions,
@@ -54,6 +72,15 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
     });
     setStep('success');
   }
+
+  // Allocation status chip content
+  const statusChip = targetAmount <= 0
+    ? { text: 'Enter an investment amount', cls: 'bg-slate-100 text-slate-500 border-slate-200', icon: AlertCircle }
+    : fullyAllocated
+      ? { text: 'Fully allocated', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle2 }
+      : remaining > 0
+        ? { text: `${fmtEuro(remaining)} unallocated`, cls: 'bg-amber-50 text-amber-700 border-amber-200', icon: AlertCircle }
+        : { text: `${fmtEuro(-remaining)} over budget`, cls: 'bg-red-50 text-red-700 border-red-200', icon: AlertCircle };
 
   return (
     <motion.div
@@ -110,9 +137,7 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
                     <label
                       key={opt.value}
                       className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
-                        fundingType === opt.value
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-slate-200 hover:border-slate-300'
+                        fundingType === opt.value ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-slate-300'
                       }`}
                     >
                       <input
@@ -137,18 +162,70 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
                 </div>
               )}
 
-              {/* Milestone rows */}
+              {/* Milestone schedule */}
               {fundingType === 'milestone' && (
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">Milestone Conditions</label>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-sm font-semibold text-slate-700">Milestone Schedule</label>
+                    <button
+                      type="button"
+                      onClick={distributeEvenly}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      <Scale className="w-3.5 h-3.5" strokeWidth={2.2} />
+                      Distribute evenly
+                    </button>
+                  </div>
+
+                  {/* Allocation tracker */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-4">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <span className="text-xs text-slate-500">
+                        <span className="font-semibold text-slate-800">{fmtEuro(allocated)}</span> of {fmtEuro(targetAmount)} allocated
+                      </span>
+                      <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${statusChip.cls}`}>
+                        <statusChip.icon className="w-3 h-3" strokeWidth={2.4} />
+                        {statusChip.text}
+                      </span>
+                    </div>
+                    {/* Stacked allocation bar */}
+                    <div className="h-3 rounded-full bg-slate-200 overflow-hidden flex">
+                      {milestones.map((m, i) => {
+                        const pct = targetAmount > 0 ? Math.min(((Number(m.amount) || 0) / targetAmount) * 100, 100) : 0;
+                        return (
+                          <motion.div
+                            key={i}
+                            className={`${barColors[i % barColors.length]} h-full border-r border-white/60 last:border-r-0`}
+                            initial={false}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Milestone rows */}
                   <div className="flex flex-col gap-4">
                     {milestones.map((m, i) => (
-                      <div key={i} className="bg-slate-50 rounded-2xl p-4 flex flex-col gap-3 border border-slate-200">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
-                            {i + 1}
+                      <div key={i} className="bg-white rounded-2xl p-4 flex flex-col gap-3 border border-slate-200 shadow-sm">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-6 h-6 rounded-full ${barColors[i % barColors.length]} text-white flex items-center justify-center text-xs font-bold`}>
+                              {i + 1}
+                            </div>
+                            <span className="text-sm font-semibold text-slate-700">Milestone {i + 1}</span>
                           </div>
-                          <span className="text-sm font-semibold text-slate-700">Milestone {i + 1}</span>
+                          {milestones.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeMilestone(i)}
+                              className="text-slate-300 hover:text-red-500 transition-colors p-1"
+                              aria-label="Remove milestone"
+                            >
+                              <Trash2 className="w-4 h-4" strokeWidth={2} />
+                            </button>
+                          )}
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
@@ -161,11 +238,16 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
                           </div>
                           <div>
                             <label className="text-xs text-slate-500 mb-1 block">Release amount</label>
-                            <input
-                              value={m.amount}
-                              onChange={(e) => updateMilestone(i, 'amount', e.target.value)}
-                              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
-                            />
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">€</span>
+                              <input
+                                inputMode="numeric"
+                                value={m.amount === 0 ? '' : String(m.amount)}
+                                onChange={(e) => updateMilestone(i, 'amount', parseAmount(e.target.value))}
+                                placeholder="0"
+                                className="w-full pl-7 pr-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white tabular-nums"
+                              />
+                            </div>
                           </div>
                         </div>
                         <div>
@@ -188,6 +270,16 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
                       </div>
                     ))}
                   </div>
+
+                  {/* Add milestone */}
+                  <button
+                    type="button"
+                    onClick={addMilestone}
+                    className="mt-4 w-full py-2.5 rounded-xl border border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/40 transition-colors text-sm font-medium flex items-center justify-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" strokeWidth={2.2} />
+                    Add milestone
+                  </button>
                 </div>
               )}
 
@@ -203,13 +295,28 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
                 />
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
-              >
-                Review Proposal Summary
-                <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
-              </button>
+              {/* Submit — gated on a balanced schedule */}
+              <div>
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+                    canSubmit
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  Review Proposal Summary
+                  <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
+                </button>
+                {!canSubmit && fundingType === 'milestone' && (
+                  <p className="text-xs text-slate-400 text-center mt-2">
+                    {targetAmount <= 0
+                      ? 'Enter an investment amount to build the milestone schedule.'
+                      : 'Milestone amounts must add up to the total investment before you can continue.'}
+                  </p>
+                )}
+              </div>
             </form>
           )}
 
@@ -220,7 +327,7 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
                 <div className="flex flex-col gap-3">
                   {[
                     { label: 'Startup', value: startup.name },
-                    { label: 'Investment Amount', value: investmentAmount || '—' },
+                    { label: 'Investment Amount', value: fmtEuro(targetAmount) },
                     { label: 'Funding Type', value: fundingType === 'milestone' ? 'Milestone-based funding' : 'Full amount upfront' },
                     { label: 'Tax Rebate Eligibility', value: '✓ ' + startup.taxRebate },
                     { label: 'Government Equity Stake', value: startup.govEquity },
@@ -236,13 +343,25 @@ export default function ProposalModal({ startup, onClose, onSubmit }) {
 
               {fundingType === 'milestone' && (
                 <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5">
-                  <p className="text-xs font-semibold text-indigo-700 mb-3">Milestone Schedule</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold text-indigo-700">Milestone Schedule</p>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+                      <CheckCircle2 className="w-3 h-3" strokeWidth={2.4} /> Balanced
+                    </span>
+                  </div>
                   {milestones.map((m, i) => (
-                    <div key={i} className="flex justify-between text-xs text-indigo-700 py-1 border-b border-indigo-100 last:border-0">
-                      <span>{m.name}</span>
-                      <span className="font-semibold">{m.amount}</span>
+                    <div key={i} className="flex justify-between text-xs text-indigo-700 py-1.5 border-b border-indigo-100 last:border-0">
+                      <span className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${barColors[i % barColors.length]}`} />
+                        {m.name}
+                      </span>
+                      <span className="font-semibold tabular-nums">{fmtEuro(m.amount)}</span>
                     </div>
                   ))}
+                  <div className="flex justify-between text-xs font-bold text-indigo-900 pt-2.5 mt-1 border-t border-indigo-200">
+                    <span>Total</span>
+                    <span className="tabular-nums">{fmtEuro(allocated)}</span>
+                  </div>
                 </div>
               )}
 

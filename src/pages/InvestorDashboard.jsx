@@ -2,11 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronDown, FileText, Check, Loader2, X, AlertTriangle, Download,
-  ArrowRight, TrendingUp, ShieldCheck, ClipboardList, Circle,
-  Wallet, Building2, Activity,
+  ArrowRight, TrendingUp, ShieldCheck, ClipboardList, Circle, LineChart,
 } from 'lucide-react';
-import StatCard from '../components/StatCard';
-import ProgressBar from '../components/ProgressBar';
 import Reveal from '../components/Reveal';
 import { portfolioStartups } from '../data/mockData';
 
@@ -110,12 +107,17 @@ function Chevron({ open }) {
   );
 }
 
-function SectionToggle({ label, open, onToggle, rightBadge }) {
+function SectionToggle({ label, open, onToggle, rightBadge, icon: Icon }) {
   return (
     <button onClick={onToggle}
-      className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors duration-150">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold text-slate-700">{label}</span>
+      className={`w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50/70 transition-colors duration-150 ${open ? 'bg-slate-50/70' : ''}`}>
+      <div className="flex items-center gap-3">
+        {Icon && (
+          <span className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center flex-shrink-0">
+            <Icon className="w-4 h-4" strokeWidth={2} />
+          </span>
+        )}
+        <span className="text-sm font-semibold text-slate-800">{label}</span>
         {rightBadge}
       </div>
       <Chevron open={open} />
@@ -732,6 +734,10 @@ export default function InvestorDashboard({ proposal }) {
   const lockedTotal   = rebates.filter(r => !r.eligible).reduce((sum, r) => sum + r.rebateAmount, 0);
   const totalInvested = portfolioStartups.reduce((sum, s) => sum + s.investedAmount, 0);
 
+  // Account holder (same investor across all positions)
+  const investor = portfolioStartups[0].investor;
+  const investorInitials = investor.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
   // Find startup objects for modals
   const claimStartup = claimFlow ? portfolioStartups.find(s => s.id === claimFlow.startupId) : null;
   const claimRebate  = claimFlow ? rebates[portfolioStartups.findIndex(s => s.id === claimFlow.startupId)] : null;
@@ -764,46 +770,65 @@ export default function InvestorDashboard({ proposal }) {
         )}
       </AnimatePresence>
 
-      <div className="max-w-7xl mx-auto px-6 pt-24 pb-12">
+      <div className="max-w-5xl mx-auto px-6 pt-24 pb-16">
 
-        {/* Header */}
-        <Reveal className="mb-10">
-          <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-full px-4 py-1.5 text-sm text-blue-700 font-medium mb-4">
-            <Wallet className="w-4 h-4" strokeWidth={2.2} />
-            Your FundBridge portfolio
+        {/* Personalized account header */}
+        <Reveal>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-lg font-bold font-display shadow-[0_6px_20px_rgba(37,99,235,0.35)] flex-shrink-0">
+                {investorInitials}
+              </div>
+              <div>
+                <p className="text-sm text-slate-400">Welcome back,</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight font-display leading-tight">{investor.name}</h1>
+                <p className="text-xs text-slate-400 mt-1 font-mono">{investor.investorId} · Member since 2022</p>
+              </div>
+            </div>
+            <div className="flex items-stretch rounded-2xl border border-slate-200 bg-white shadow-[var(--shadow-soft)] divide-x divide-slate-100 self-start">
+              {[
+                { label: 'Total Invested', value: fmt(totalInvested) },
+                { label: 'Positions', value: String(portfolioStartups.length) },
+                { label: 'Rebate Eligible', value: fmt(eligibleTotal) },
+              ].map((stat) => (
+                <div key={stat.label} className="px-5 py-3 text-center">
+                  <p className="text-lg font-bold text-slate-900 font-display">{stat.value}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight font-display">Investor Dashboard</h1>
-          <p className="text-slate-500 mt-3 text-lg">Your portfolio, investment records, and tax rebate eligibility.</p>
         </Reveal>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Invested" value={fmt(totalInvested)} accent="blue" icon={Wallet} />
-          <StatCard label="Startups Funded" value={portfolioStartups.length.toString()} sub="via FundBridge" accent="indigo" icon={Building2} />
-          <StatCard
-            label="Milestones Released"
-            value={`${portfolioStartups.reduce((s, p) => s + p.milestones.filter(m => m.status === 'Released').length, 0)}`}
-            sub="across your portfolio"
-            accent="amber"
-            icon={Activity}
-          />
-          <StatCard
-            label="Tax Rebate Eligible"
-            value={fmt(eligibleTotal)}
-            sub={lockedTotal > 0 ? `${fmt(lockedTotal)} locked · 30% rate` : 'Fully eligible · 30% rate'}
-            accent="emerald"
-            icon={ShieldCheck}
-          />
+        {/* Proposal activity (slim) */}
+        <Reveal className="mb-10">
+          {proposal ? (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[var(--shadow-soft)] p-5 flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <span className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                  <Check className="w-4 h-4" strokeWidth={2.4} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">Proposal sent to {proposal.startup}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{proposal.amount} · {proposal.fundingType === 'milestone' ? 'Milestone-based' : 'Full amount'} · meeting coordination in progress</p>
+                </div>
+              </div>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Pending meeting</span>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[var(--shadow-soft)] px-5 py-4 flex items-center gap-3 text-sm text-slate-400">
+              <ClipboardList className="w-4 h-4 flex-shrink-0" strokeWidth={2} />
+              No active proposals — open a startup to create your first investment proposal.
+            </div>
+          )}
+        </Reveal>
+
+        {/* Portfolio */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-900">Your Portfolio</h2>
+          <span className="text-sm text-slate-400">{portfolioStartups.length} positions</span>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Left — Portfolio */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <h3 className="text-base font-semibold text-slate-900 mb-5">Portfolio Startups</h3>
-
-              <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-5">
                 {portfolioStartups.map((s, i) => {
                   const r = rebates[i];
                   const regKey = `${s.id}-reg`;
@@ -811,39 +836,64 @@ export default function InvestorDashboard({ proposal }) {
                   const isSubmitted = !!submittedClaims[s.id];
                   const claimInfo = submittedClaims[s.id] || null;
 
+                  const companyInitials = s.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+                  const rebateChip = isSubmitted ? 'Claim in review' : s.taxRebateStatus;
                   return (
-                    <div key={s.id} className={`border rounded-2xl overflow-hidden ${s.isInsolvent ? 'border-red-200' : 'border-slate-200'}`}>
-
+                    <motion.div
+                      key={s.id}
+                      whileHover={{ y: -2 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+                      className={`bg-white rounded-2xl border shadow-[var(--shadow-soft)] overflow-hidden ${s.isInsolvent ? 'border-red-200' : 'border-slate-200'}`}
+                    >
                       {/* Company header */}
-                      <div className={`p-4 ${s.isInsolvent ? 'bg-red-50/30' : 'bg-white'}`}>
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-semibold text-slate-900">{s.name}</p>
+                      <div className="p-5">
+                        <div className="flex items-start gap-3.5">
+                          <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 ${s.isInsolvent ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-700'}`}>
+                            {companyInitials}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-semibold text-slate-900">{s.name}</h3>
                               {s.isInsolvent && (
-                                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200">
-                                  Insolvent
-                                </span>
+                                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200">Insolvent</span>
                               )}
                             </div>
                             <p className="text-xs text-slate-400 mt-0.5">{s.fundingType} · {s.startupDetails.fundBridgeId}</p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-base font-bold text-slate-900">{s.invested}</span>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-lg font-bold text-slate-900 leading-none">{s.invested}</p>
+                            <span className={`inline-block mt-2 text-[11px] font-semibold px-2 py-0.5 rounded-full ${rebateStatusStyle[rebateChip] || rebateStatusStyle['Locked']}`}>
+                              {rebateChip}
+                            </span>
                           </div>
                         </div>
-                        <ProgressBar label="Milestone Progress" progress={s.milestoneProgress} color={s.isInsolvent ? 'amber' : 'indigo'} />
+                        <div className="mt-4">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-medium text-slate-500">Milestone progress</span>
+                            <span className="text-xs font-semibold text-slate-700">{s.milestoneProgress}%</span>
+                          </div>
+                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <motion.div
+                              className={`h-full rounded-full ${s.isInsolvent ? 'bg-amber-400' : 'bg-indigo-500'}`}
+                              initial={{ width: 0 }}
+                              whileInView={{ width: `${s.milestoneProgress}%` }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                            />
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Accordion sections */}
-                      <div className={`border-t flex flex-col gap-2 p-3 ${s.isInsolvent ? 'border-red-100 bg-red-50/20' : 'border-slate-100 bg-slate-50/50'}`}>
+                      {/* Collapsible components */}
+                      <div className="border-t border-slate-100 divide-y divide-slate-100">
                         <div>
                           <SectionToggle
-                            label="Investment Registration"
+                            label="Investment Details"
+                            icon={FileText}
                             open={openSections[regKey]}
                             onToggle={() => toggle(regKey)}
                             rightBadge={
-                              <span className="text-[11px] font-medium text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
+                              <span className="text-[11px] font-medium text-slate-400">
                                 {s.payments.length} payment{s.payments.length !== 1 ? 's' : ''} · {s.milestones.filter(m => m.status === 'Released').length}/5 milestones
                               </span>
                             }
@@ -857,7 +907,7 @@ export default function InvestorDashboard({ proposal }) {
                                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                                 className="overflow-hidden"
                               >
-                                <div className="mt-2 px-1">
+                                <div className="px-5 pb-5">
                                   <InvestmentRegistration startup={s} />
                                 </div>
                               </motion.div>
@@ -868,11 +918,12 @@ export default function InvestorDashboard({ proposal }) {
                         <div>
                           <SectionToggle
                             label="Tax Rebate"
+                            icon={ShieldCheck}
                             open={openSections[taxKey]}
                             onToggle={() => toggle(taxKey)}
                             rightBadge={
-                              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${rebateStatusStyle[isSubmitted ? 'Claim in review' : s.taxRebateStatus] || rebateStatusStyle['Locked']}`}>
-                                {isSubmitted ? 'Claim in review' : s.taxRebateStatus}
+                              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${rebateStatusStyle[rebateChip] || rebateStatusStyle['Locked']}`}>
+                                {rebateChip}
                               </span>
                             }
                           />
@@ -885,7 +936,7 @@ export default function InvestorDashboard({ proposal }) {
                                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                                 className="overflow-hidden"
                               >
-                                <div className="mt-2 px-1">
+                                <div className="px-5 pb-5">
                                   <TaxRebateSection
                                     startup={s}
                                     rebate={r}
@@ -899,150 +950,113 @@ export default function InvestorDashboard({ proposal }) {
                           </AnimatePresence>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
-              </div>
-            </div>
+        </div>
 
-            {/* Success / Failure simulation */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <h3 className="text-base font-semibold text-slate-900 mb-4">Success / Failure Simulation</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
-                  <p className="text-sm font-semibold text-emerald-800 mb-2 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" strokeWidth={2.2} /> If startup succeeds
-                  </p>
-                  <p className="text-sm text-emerald-700 leading-relaxed">Investor receives upside from growth or exit. Government benefits through its passive equity stake.</p>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
-                  <p className="text-sm font-semibold text-blue-800 mb-2 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4" strokeWidth={2.2} /> If startup fails
-                  </p>
-                  <p className="text-sm text-blue-700 leading-relaxed">Investors who held for ≥24 months and meet all §17 EStG conditions receive a 30% tax rebate. File via FundBridge.</p>
-                </div>
-              </div>
-              <div className="mt-4 bg-slate-50 rounded-xl p-4">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Example: €350K · Solaris Dynamics (eligible)</p>
-                <div className="flex flex-col gap-2">
-                  {[
-                    { scenario: 'Success (3× exit)', result: '+€700,000', color: 'text-emerald-600' },
-                    { scenario: 'Breakeven', result: '€0', color: 'text-slate-600' },
-                    { scenario: 'Failure — rebate applies (≥24 mo. + insolvency)', result: '-€245,000 net', color: 'text-amber-600' },
-                    { scenario: 'Failure — no rebate (<24 mo.)', result: '-€350,000', color: 'text-red-600' },
-                  ].map((row) => (
-                    <div key={row.scenario} className="flex justify-between text-sm">
-                      <span className="text-slate-600">{row.scenario}</span>
-                      <span className={`font-semibold ${row.color}`}>{row.result}</span>
+        {/* Portfolio insights (collapsed) */}
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-white shadow-[var(--shadow-soft)] overflow-hidden">
+          <SectionToggle
+            label="Portfolio insights"
+            icon={LineChart}
+            open={openSections['insights']}
+            onToggle={() => toggle('insights')}
+            rightBadge={<span className="text-[11px] text-slate-400">Scenarios &amp; rebate rollup</span>}
+          />
+          <AnimatePresence initial={false}>
+            {openSections['insights'] && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="border-t border-slate-100 p-6 flex flex-col gap-8">
+                  {/* Success / Failure simulation */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900 mb-4">Success / Failure Simulation</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
+                        <p className="text-sm font-semibold text-emerald-800 mb-2 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4" strokeWidth={2.2} /> If startup succeeds
+                        </p>
+                        <p className="text-sm text-emerald-700 leading-relaxed">Investor receives upside from growth or exit. Government benefits through its passive equity stake.</p>
+                      </div>
+                      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
+                        <p className="text-sm font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4" strokeWidth={2.2} /> If startup fails
+                        </p>
+                        <p className="text-sm text-blue-700 leading-relaxed">Investors who held for ≥24 months and meet all §17 EStG conditions receive a 30% tax rebate. File via FundBridge.</p>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right column */}
-          <div className="flex flex-col gap-6">
-
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <h3 className="text-base font-semibold text-slate-900 mb-4">Proposal Activity</h3>
-              {proposal ? (
-                <div className="flex flex-col gap-3">
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-                    <span className="text-emerald-600 text-sm font-semibold inline-flex items-center gap-1.5">
-                      <Check className="w-4 h-4" strokeWidth={2.5} /> Proposal sent
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {[
-                      { label: 'Startup', value: proposal.startup },
-                      { label: 'Amount', value: proposal.amount },
-                      { label: 'Type', value: proposal.fundingType === 'milestone' ? 'Milestone-based' : 'Full amount' },
-                      { label: 'Tax Rebate', value: proposal.taxRebate },
-                      { label: 'Gov. Equity', value: proposal.govEquity },
-                    ].map((row) => (
-                      <div key={row.label} className="flex justify-between text-sm">
-                        <span className="text-slate-500">{row.label}</span>
-                        <span className="font-medium text-slate-800">{row.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
-                    <p className="text-xs font-semibold text-amber-700">Next step</p>
-                    <p className="text-xs text-amber-600 mt-1">FundBridge meeting coordination in progress</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-3">
-                    <ClipboardList className="w-6 h-6" strokeWidth={2} />
-                  </div>
-                  <p className="text-sm text-slate-500">No proposals created yet.</p>
-                  <p className="text-xs text-slate-400 mt-1">Select a startup to create your first investment proposal.</p>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-base font-semibold text-slate-900">Rebate Summary</h3>
-                <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded-full">§17 EStG</span>
-              </div>
-
-              <div className="flex flex-col gap-3 mb-5">
-                {portfolioStartups.map((s, i) => {
-                  const r = rebates[i];
-                  const isSubmitted = !!submittedClaims[s.id];
-                  const displayStatus = isSubmitted ? 'Claim in review' : s.taxRebateStatus;
-                  return (
-                    <div key={s.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3.5">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-sm font-medium text-slate-800">{s.name}</span>
-                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${rebateStatusStyle[displayStatus] || rebateStatusStyle['Locked']}`}>
-                          {displayStatus}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                        <span>{s.invested} · {r.monthsHeld} months held</span>
-                        <span className={r.eligible ? 'font-bold text-emerald-600' : 'text-slate-400'}>
-                          {r.eligible ? fmt(r.rebateAmount) : `${fmt(r.rebateAmount)} locked`}
-                        </span>
-                      </div>
-                      {!r.eligible && (
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-400 rounded-full" style={{ width: `${(r.monthsHeld / HOLDING_REQUIRED_MONTHS) * 100}%` }} />
+                    <div className="mt-4 bg-slate-50 rounded-xl p-4">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Example: €350K · Solaris Dynamics (eligible)</p>
+                      <div className="flex flex-col gap-2">
+                        {[
+                          { scenario: 'Success (3× exit)', result: '+€700,000', color: 'text-emerald-600' },
+                          { scenario: 'Breakeven', result: '€0', color: 'text-slate-600' },
+                          { scenario: 'Failure — rebate applies (≥24 mo. + insolvency)', result: '-€245,000 net', color: 'text-amber-600' },
+                          { scenario: 'Failure — no rebate (<24 mo.)', result: '-€350,000', color: 'text-red-600' },
+                        ].map((row) => (
+                          <div key={row.scenario} className="flex justify-between text-sm">
+                            <span className="text-slate-600">{row.scenario}</span>
+                            <span className={`font-semibold ${row.color}`}>{row.result}</span>
                           </div>
-                          <span className="text-[10px] text-slate-400 tabular-nums flex-shrink-0">{r.monthsHeld}/24 mo</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rebate rollup */}
+                  <div className="border-t border-slate-100 pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-semibold text-slate-900">Rebate Rollup</h3>
+                      <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded-full">§17 EStG</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+                      {portfolioStartups.map((s, i) => {
+                        const r = rebates[i];
+                        const subm = !!submittedClaims[s.id];
+                        const displayStatus = subm ? 'Claim in review' : s.taxRebateStatus;
+                        return (
+                          <div key={s.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3.5">
+                            <p className="text-sm font-medium text-slate-800 mb-1.5">{s.name}</p>
+                            <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full ${rebateStatusStyle[displayStatus] || rebateStatusStyle['Locked']}`}>
+                              {displayStatus}
+                            </span>
+                            <div className="flex items-center justify-between text-xs text-slate-400 mt-2">
+                              <span>{s.invested} · {r.monthsHeld} mo</span>
+                              <span className={r.eligible ? 'font-bold text-emerald-600' : 'text-slate-400'}>
+                                {r.eligible ? fmt(r.rebateAmount) : `${fmt(r.rebateAmount)} locked`}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex flex-col gap-2 max-w-sm">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Eligible now</span>
+                        <span className="font-bold text-emerald-600">{fmt(eligibleTotal)}</span>
+                      </div>
+                      {lockedTotal > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-500">Locked (pending)</span>
+                          <span className="font-medium text-amber-500">{fmt(lockedTotal)}</span>
                         </div>
                       )}
+                      <div className="flex justify-between text-sm border-t border-slate-100 pt-2 mt-1">
+                        <span className="text-slate-700 font-medium">Total potential</span>
+                        <span className="font-bold text-slate-900">{fmt(eligibleTotal + lockedTotal)}</span>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-
-              <div className="border-t border-slate-100 pt-4 flex flex-col gap-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Eligible now</span>
-                  <span className="font-bold text-emerald-600">{fmt(eligibleTotal)}</span>
-                </div>
-                {lockedTotal > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Locked (pending)</span>
-                    <span className="font-medium text-amber-500">{fmt(lockedTotal)}</span>
                   </div>
-                )}
-                <div className="flex justify-between text-sm border-t border-slate-100 pt-2 mt-1">
-                  <span className="text-slate-700 font-medium">Total potential</span>
-                  <span className="font-bold text-slate-900">{fmt(eligibleTotal + lockedTotal)}</span>
                 </div>
-              </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed mt-4">
-                Under §17 EStG pilot regulation, investors holding FundBridge positions for ≥24 months receive a 30% tax rebate on loss upon verified insolvency.
-              </p>
-            </div>
-
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

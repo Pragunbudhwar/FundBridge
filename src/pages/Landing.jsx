@@ -5,7 +5,6 @@ import {
 } from 'lucide-react';
 import Reveal from '../components/Reveal';
 import CountUp from '../components/CountUp';
-import MagneticButton from '../components/MagneticButton';
 import BridgeIllustration from '../components/BridgeIllustration';
 
 const SECTORS = ['ClimateTech', 'HealthTech', 'DeepTech', 'AgriTech', 'Cybersecurity', 'FinTech', 'SpaceTech', 'BioTech'];
@@ -96,20 +95,19 @@ export default function Landing({ setPage }) {
             </motion.p>
 
             <motion.div variants={item} className="mt-9 flex items-center justify-center gap-4 flex-wrap">
-              <MagneticButton
+              <button
                 onClick={() => setPage('marketplace')}
-                className="group px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base shadow-[var(--shadow-glow-blue)] flex items-center gap-2"
+                className="px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base shadow-[var(--shadow-glow-blue)] transition-colors duration-200 flex items-center gap-2"
               >
                 Explore Startups
-                <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.2} />
-              </MagneticButton>
-              <MagneticButton
-                strength={0.2}
+                <ArrowRight className="w-5 h-5" strokeWidth={2.2} />
+              </button>
+              <button
                 onClick={() => setPage('investor')}
-                className="px-8 py-3.5 rounded-xl bg-white text-slate-700 font-semibold text-base border border-slate-200 shadow-sm hover:bg-slate-50"
+                className="px-8 py-3.5 rounded-xl bg-white text-slate-700 font-semibold text-base border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors duration-200"
               >
                 Investor Dashboard
-              </MagneticButton>
+              </button>
             </motion.div>
           </motion.div>
         </div>
@@ -225,13 +223,13 @@ export default function Landing({ setPage }) {
               <p className="text-blue-100 text-lg mb-9 max-w-lg mx-auto leading-relaxed">
                 Browse government-backed startups seeking private investment for their stage 4–6 growth phase.
               </p>
-              <MagneticButton
+              <button
                 onClick={() => setPage('marketplace')}
-                className="group inline-flex items-center gap-2 px-10 py-4 bg-white text-blue-700 font-semibold rounded-xl hover:bg-blue-50 shadow-lg"
+                className="inline-flex items-center gap-2 px-10 py-4 bg-white text-blue-700 font-semibold rounded-xl hover:bg-blue-50 shadow-lg transition-colors duration-200"
               >
                 Explore Startups
-                <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.2} />
-              </MagneticButton>
+                <ArrowRight className="w-5 h-5" strokeWidth={2.2} />
+              </button>
             </div>
           </div>
         </Reveal>
